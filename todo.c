@@ -104,7 +104,7 @@ void delete(void)
 			prev = p, p = p->next)
 		;
 	if (p == NULL || p->number != number) {
-		printf("Task not found.\n");
+		printf("-- Task not found --\n");
 		return;
 	}
 
