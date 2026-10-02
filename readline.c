@@ -1,19 +1,33 @@
-#include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "readline.h"
 
-int read_line(char *str, int len)
+char *readline(void)
 {
-	int ch, num_chars = 0;
+	size_t buf = 16, len = 0;
+	char *str, *temp;
+	int ch;
 
-	while (isspace(ch = getchar()))
-		;
-	while (ch != '\n' && ch != EOF) {
-		if (num_chars < len)
-			str[num_chars++] = ch;
-		ch = getchar();
+	str = malloc(buf);
+	if (str == NULL)
+		return NULL;
+
+	while ((ch = getchar()) != '\n' && ch != EOF) {
+		if (len + 1 >= buf) {
+			buf *= 2;
+			temp = realloc(str, buf);
+			if (temp == NULL) {
+				free(str);
+				return NULL;
+			}
+
+			str = temp;
+		}
+
+		str[len++] = (char)ch;
 	}
-	str[num_chars] = '\0';
 
-	return num_chars;
+	str[len] = '\0';
+
+	return str;
 }
