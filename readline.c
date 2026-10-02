@@ -2,18 +2,18 @@
 #include <stdio.h>
 #include "readline.h"
 
-int readline(char s[], int n)
+int read_line(char *str, int len)
 {
-	int c, i = 0;
+	int ch, num_chars = 0;
 
-	while (isspace(c = getchar()))
+	while (isspace(ch = getchar()))
 		;
-	while (c != '\n' && c != EOF) {
-		if (i < n)
-			s[i++] = c;
-		c = getchar();
+	while (ch != '\n' && ch != EOF) {
+		if (num_chars < len)
+			str[num_chars++] = ch;
+		ch = getchar();
 	}
-	s[i] = '\0';
+	str[num_chars] = '\0';
 
-	return i;
+	return num_chars;
 }

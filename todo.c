@@ -5,15 +5,19 @@
 #define NAME_LEN 50
 
 struct task {
+	int number;
 	char name[NAME_LEN + 1];
 	struct task *next;
 };
 
-struct task *head = NULL;
+struct task *todo = NULL;
+int num_tasks = 0;
 
 void insert(void);
 void delete(void);
+void renumber(void);
 void print(void);
+void free_all(void);
 
 int main(void)
 {
@@ -28,20 +32,17 @@ int main(void)
 			;
 
 		switch (code) {
-			case 'i':
-				insert();
-				break;
-			case 'd':
-				delete();
-				break;
-			case 'p':
-				print();
-				break;
-			case 'q':
-				return 0;
-			default:
-				printf("-- Invalid code --\n");
-				break;
+			case 'i': insert();
+			          break;
+			case 'd': delete();
+			          renumber();
+			          break;
+			case 'p': print();
+			          break;
+			case 'q': free_all();
+			          return 0;
+			default:  printf("-- Invalid code --\n");
+			          break;
 		}
 	}
 
@@ -50,38 +51,36 @@ int main(void)
 
 void insert(void)
 {
-	struct task *new_task;
-	struct task *p;
+	struct task *new_task, *p;
 
-	new_task = malloc(sizeof(struct task));
+	new_task = malloc(sizeof *new_task);
 	if (new_task == NULL) {
 		printf("-- Database is full --\n");
 		return;
 	}
 
+	new_task->number = ++num_tasks;
+
 	printf("Enter task: ");
-	readline(new_task->name, NAME_LEN);
+	read_line(new_task->name, NAME_LEN);
 
 	new_task->next = NULL;
 
-	if (head == NULL) {
-		head = new_task;
-	} else {
-		for (p = head; p->next != NULL; p = p->next)
+	if (todo == NULL)
+		todo = new_task;
+	else {
+		for (p = todo; p->next != NULL; p = p->next)
 			;
-
 		p->next = new_task;
 	}
 }
 
 void delete(void)
 {
-	struct task *prev;
-	struct task *current;
+	struct task *prev, *p;
 	int number;
-	int current_number;
 
-	if (head == NULL) {
+	if (todo == NULL) {
 		printf("-- No tasks to delete --\n");
 		return;
 	}
@@ -91,35 +90,37 @@ void delete(void)
 	while (getchar() != '\n')
 		;
 
-	prev = NULL;
-	current = head;
-	current_number = 1;
-
-	while (current != NULL && current_number < number) {
-		prev = current;
-		current = current->next;
-		current_number++;
-	}
-
-	if (current == NULL || current_number != number) {
+	for (prev = NULL, p = todo;
+			p != NULL && p->number < number;
+			prev = p, p = p->next)
+		;
+	if (p == NULL || p->number != number) {
 		printf("Task not found.\n");
 		return;
 	}
-
 	if (prev == NULL)
-		head = current->next;
+		todo = p->next;
 	else
-		prev->next = current->next;
+		prev->next = p->next;
 
-	free(current);
+	free(p);
+}
+
+void renumber(void)
+{
+	struct task *p;
+	int number = 0;
+	
+	for (p = todo; p != NULL; p = p->next)
+		p->number = ++number;
+	num_tasks = number;
 }
 
 void print(void)
 {
 	struct task *p;
-	int number = 1;
 
-	if (head == NULL) {
+	if (todo == NULL) {
 		printf("-- No tasks to print --\n");
 		return;
 	}
@@ -127,9 +128,18 @@ void print(void)
 	printf("+-----+----------------------------------------------------+\n");
 	printf("| No. | Task                                               |\n");
 	printf("+-----+----------------------------------------------------+\n");
-
-	for (p = head; p != NULL; p = p->next)
-		printf("| %3d | %-50s |\n", number++, p->name);
-
+	for (p = todo; p != NULL; p = p->next)
+		printf("| %3d | %-50s |\n", p->number, p->name);
 	printf("+-----+----------------------------------------------------+\n");
+}
+
+void free_all(void)
+{
+	struct task *p;
+
+	while (todo != NULL) {
+		p = todo;
+		todo = todo->next;
+		free(p);
+	}
 }
