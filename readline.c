@@ -20,13 +20,10 @@ char *readline(void)
 				free(str);
 				return NULL;
 			}
-
 			str = temp;
 		}
-
 		str[len++] = (char)ch;
 	}
-
 	str[len] = '\0';
 
 	return str;
